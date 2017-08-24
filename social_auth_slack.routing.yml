@@ -1,0 +1,25 @@
+social_auth_slack.redirect_to_slack:
+  path: 'user/login/slack'
+  defaults:
+    _controller: '\Drupal\social_auth_slack\Controller\SlackAuthController::redirectToSlack'
+  requirements:
+    _role: 'anonymous'
+  options:
+    no_cache: TRUE
+
+social_auth_slack.callback:
+  path: 'user/login/slack/callback'
+  defaults:
+    _controller: '\Drupal\social_auth_slack\Controller\SlackAuthController::callback'
+  requirements:
+    _role: 'anonymous'
+  options:
+    no_cache: TRUE
+
+social_auth_slack.settings_form:
+  path: 'admin/config/social-api/social-auth/slack'
+  defaults:
+    _title: 'Social Auth Slack settings'
+    _form: '\Drupal\social_auth_slack\Form\SlackAuthSettingsForm'
+  requirements:
+    _permission: 'administer social api authentication'
