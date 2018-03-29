@@ -10,7 +10,6 @@ use Drupal\social_auth_slack\SlackAuthManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
  * Returns responses for Simple Slack Connect module routes.
@@ -71,26 +70,25 @@ class SlackAuthController extends ControllerBase {
    *   Used to manage authentication methods.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request
    *   Used to access GET parameters.
-   * @param \Drupal\social_auth\SocialAuthDataHandler $social_auth_data_handler
+   * @param \Drupal\social_auth\SocialAuthDataHandler $data_handler
    *   SocialAuthDataHandler object.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   Used for logging errors.
    */
-  public function __construct(NetworkManager $network_manager, SocialAuthUserManager $user_manager, SlackAuthManager $slack_manager, RequestStack $request, SocialAuthDataHandler $social_auth_data_handler, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(NetworkManager $network_manager,
+                              SocialAuthUserManager $user_manager,
+                              SlackAuthManager $slack_manager,
+                              RequestStack $request,
+                              SocialAuthDataHandler $data_handler) {
 
     $this->networkManager = $network_manager;
     $this->userManager = $user_manager;
     $this->slackManager = $slack_manager;
     $this->request = $request;
-    $this->dataHandler = $social_auth_data_handler;
-    $this->loggerFactory = $logger_factory;
-
+    $this->dataHandler = $data_handler;
     // Sets the plugin id.
     $this->userManager->setPluginId('social_auth_slack');
 
     // Sets the session keys to nullify if user could not logged in.
     $this->userManager->setSessionKeysToNullify(['access_token', 'oauth2state']);
-    $this->setting = $this->config('social_auth_slack.settings');
   }
 
   /**
@@ -102,7 +100,7 @@ class SlackAuthController extends ControllerBase {
       $container->get('social_auth.user_manager'),
       $container->get('social_auth_slack.manager'),
       $container->get('request_stack'),
-      $container->get('social_auth.social_auth_data_handler'),
+      $container->get('social_auth.data_handler'),
       $container->get('logger.factory')
     );
   }
@@ -113,7 +111,7 @@ class SlackAuthController extends ControllerBase {
    * Redirects the user to Slack for authentication.
    */
   public function redirectToSlack() {
-    /* @var \League\OAuth2\Client\Provider\Slack false $slack */
+    /* @var \AdamPaterson\OAuth2\Client\Provider\Slack false $slack */
     $slack = $this->networkManager->createInstance('social_auth_slack')->getSdk();
 
     // If slack client could not be obtained.
@@ -126,9 +124,7 @@ class SlackAuthController extends ControllerBase {
     $this->slackManager->setClient($slack);
 
     // Generates the URL where the user will be redirected for Slack login.
-    // If the user did not have email permission granted on previous attempt,
-    // we use the re-request URL requesting only the email address.
-    $slack_login_url = $this->slackManager->getSlackLoginUrl();
+    $slack_login_url = $this->slackManager->getAuthorizationUrl();
 
     $state = $this->slackManager->getState();
 
@@ -150,7 +146,7 @@ class SlackAuthController extends ControllerBase {
       return $this->redirect('user.login');
     }
 
-    /* @var \League\OAuth2\Client\Provider\Slack false $slack */
+    /* @var \AdamPaterson\OAuth2\Client\Provider\Slack false $slack */
     $slack = $this->networkManager->createInstance('social_auth_slack')->getSdk();
 
     // If Slack client could not be obtained.
@@ -161,11 +157,11 @@ class SlackAuthController extends ControllerBase {
 
     $state = $this->dataHandler->get('oauth2state');
 
-    // Retreives $_GET['state'].
+    // Retrieves $_GET['state'].
     $retrievedState = $this->request->getCurrentRequest()->query->get('state');
     if (empty($retrievedState) || ($retrievedState !== $state)) {
       $this->userManager->nullifySessionKeys();
-      drupal_set_message($this->t('Slack login failed. Unvalid oAuth2 State.'), 'error');
+      drupal_set_message($this->t('Slack login failed. Unvalid OAuth2 State.'), 'error');
       return $this->redirect('user.login');
     }
 
@@ -175,25 +171,16 @@ class SlackAuthController extends ControllerBase {
     $this->slackManager->setClient($slack)->authenticate();
 
     // Gets user's info from Slack API.
-    if (!$slack_profile = $this->slackManager->getUserInfo()) {
+    if (!$profile = $this->slackManager->getUserInfo()) {
       drupal_set_message($this->t('Slack login failed, could not load Slack profile. Contact site administrator.'), 'error');
       return $this->redirect('user.login');
     }
 
-    // Store the data mapped with data points define is
-    // social_auth_slack settings.
-    $data = [];
-    if (!$this->userManager->checkIfUserExists($slack_profile->getId())) {
-      $api_calls = explode(PHP_EOL, $this->slackManager->getAPICalls());
+    // Gets (or not) extra initial data.
+    $data = $this->userManager->checkIfUserExists($profile->getId()) ? NULL : $this->slackManager->getExtraDetails();
 
-      // Iterate through api calls define in settings and try to retrieve them.
-      foreach ($api_calls as $api_call) {
-        $call = $this->slackManager->getExtraDetails($api_call);
-        array_push($data, $call);
-      }
-    }
     // If user information could be retrieved.
-    return $this->userManager->authenticateUser($slack_profile->getName(), $slack_profile->getEmail(), $slack_profile->getId(), $this->slackManager->getAccessToken(),$slack_profile->getImage192(), json_encode($data));
+    return $this->userManager->authenticateUser($profile->getName(), $profile->getEmail(), $profile->getId(), $this->slackManager->getAccessToken(), $profile->getImage192(), $data);
 
   }
 

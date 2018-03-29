@@ -66,7 +66,7 @@ class SlackAuth extends NetworkBase implements SlackAuthInterface {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-      $container->get('social_auth.social_auth_data_handler'),
+      $container->get('social_auth.data_handler'),
       $configuration,
       $plugin_id,
       $plugin_definition,
@@ -108,8 +108,7 @@ class SlackAuth extends NetworkBase implements SlackAuthInterface {
                               ConfigFactoryInterface $config_factory,
                               LoggerChannelFactoryInterface $logger_factory,
                               RequestContext $requestContext,
-                              Settings $settings
-  ) {
+                              Settings $settings) {
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $config_factory);
 
@@ -122,7 +121,7 @@ class SlackAuth extends NetworkBase implements SlackAuthInterface {
   /**
    * Sets the underlying SDK library.
    *
-   * @return \League\OAuth2\Client\Provider\Slack
+   * @return \AdamPaterson\OAuth2\Client\Provider\Slack
    *   The initialized 3rd party library instance.
    *
    * @throws SocialApiException
@@ -132,28 +131,23 @@ class SlackAuth extends NetworkBase implements SlackAuthInterface {
 
     $class_name = 'AdamPaterson\OAuth2\Client\Provider\Slack';
     if (!class_exists($class_name)) {
-      throw new SocialApiException(sprintf('The Slack Library for the league oAuth not found. Class: %s.', $class_name));
+      throw new SocialApiException(sprintf('The Slack library for PHP League OAuth2 not found. Class: %s.', $class_name));
     }
+
     /* @var \Drupal\social_auth_slack\Settings\SlackAuthSettings $settings */
     $settings = $this->settings;
-    // Proxy configuration data for outward proxy.
-    $proxyUrl = $this->siteSettings->get("http_client_config")["proxy"]["http"];
     if ($this->validateConfig($settings)) {
       // All these settings are mandatory.
+      $league_settings = [
+        'clientId' => $settings->getClientId(),
+        'clientSecret' => $settings->getClientSecret(),
+        'redirectUri' => $this->requestContext->getCompleteBaseUrl() . '/user/login/slack/callback',
+      ];
+
+      // Proxy configuration data for outward proxy.
+      $proxyUrl = $this->siteSettings->get('http_client_config')['proxy']['http'];
       if ($proxyUrl) {
-        $league_settings = [
-          'clientId' => $settings->getClientId(),
-          'clientSecret' => $settings->getClientSecret(),
-          'redirectUri' => $this->requestContext->getCompleteBaseUrl() . '/user/login/slack/callback',
-          'proxy' => $proxyUrl,
-        ];
-      }
-      else {
-        $league_settings = [
-          'clientId' => $settings->getClientId(),
-          'clientSecret' => $settings->getClientSecret(),
-          'redirectUri' => $this->requestContext->getCompleteBaseUrl() . '/user/login/slack/callback',
-        ];
+        $league_settings['proxy'] = $proxyUrl;
       }
 
       return new Slack($league_settings);

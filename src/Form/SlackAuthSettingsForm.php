@@ -102,31 +102,34 @@ class SlackAuthSettingsForm extends SocialAuthSettingsForm {
     $form['slack_settings']['authorized_redirect_url'] = [
       '#type' => 'textfield',
       '#disabled' => TRUE,
-      '#title' => $this->t('Authorized redirect URIs'),
-      '#description' => $this->t('Copy this value to <em>Authorized redirect URIs</em> field of your Slack App settings.'),
+      '#title' => $this->t('Authorized redirect URL'),
+      '#description' => $this->t('Copy this value to <em>Redirect URLs</em> field of your Slack App settings.'),
       '#default_value' => $GLOBALS['base_url'] . '/user/login/slack/callback',
     ];
 
-    $form['slack_settings']['authorized_javascript_origin'] = [
-      '#type' => 'textfield',
-      '#disabled' => TRUE,
-      '#title' => $this->t('Authorized Javascript Origin'),
-      '#description' => $this->t('Copy this value to <em>Authorized Javascript Origins</em> field of your Slack App settings.'),
-      '#default_value' => $this->requestContext->getHost(),
+    $form['linkedin_settings']['advanced'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Advanced settings'),
+      '#open' => FALSE,
     ];
 
-    $form['slack_settings']['scopes'] = [
+    $form['linkedin_settings']['advanced']['scopes'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Scopes for API call'),
       '#default_value' => $config->get('scopes'),
-      '#description' => $this->t('Define the requested scopes to make API calls.'),
+      '#description' => $this->t('Define any additional scopes to be requested, separated by a comma (e.g.: channels:read,channels:history).<br>
+                                  The scopes \'users:read\' and \'users:read.email\' are added by default and always requested.<br>
+                                  You can see the full list of valid fields and required scopes <a href="@fields">here</a>.', ['@fields' => 'https://api.slack.com/web']),
     ];
 
-    $form['slack_settings']['api_calls'] = [
+    $form['linkedin_settings']['advanced']['endpoints'] = [
       '#type' => 'textarea',
       '#title' => $this->t('API calls to be made to collect data'),
-      '#default_value' => $config->get('api_calls'),
-      '#description' => $this->t('Define the API calls which will retrieve data from provider.'),
+      '#default_value' => $config->get('endpoints'),
+      '#description' => $this->t('Define the endpoints to be requested when user authenticates with Slack for the first time<br>
+                                  Enter each endpoint in different lines in the format <em>endpoint</em>|<em>name_of_endpoint</em>.<br>
+                                  <b>For instance:</b><br>
+                                  /channels.list|channels_list'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -141,7 +144,7 @@ class SlackAuthSettingsForm extends SocialAuthSettingsForm {
       ->set('client_id', $values['client_id'])
       ->set('client_secret', $values['client_secret'])
       ->set('scopes', $values['scopes'])
-      ->set('api_calls', $values['api_calls'])
+      ->set('endpoints', $values['endpoints'])
       ->save();
 
     parent::submitForm($form, $form_state);
