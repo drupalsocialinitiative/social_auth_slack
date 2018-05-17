@@ -123,7 +123,7 @@ class SlackAuthController extends ControllerBase {
     // Slack service was returned, inject it to $slackManager.
     $this->slackManager->setClient($slack);
 
-    // Generates the URL where the user will be redirected for Slack login.
+    // Generates the URL where the user will be redirected for authentication.
     $slack_login_url = $this->slackManager->getAuthorizationUrl();
 
     $state = $this->slackManager->getState();
@@ -165,12 +165,13 @@ class SlackAuthController extends ControllerBase {
       return $this->redirect('user.login');
     }
 
+    $this->slackManager->setClient($slack)->authenticate();
+
     // Saves access token to session.
     $this->dataHandler->set('access_token', $this->slackManager->getAccessToken());
 
-    $this->slackManager->setClient($slack)->authenticate();
-
     // Gets user's info from Slack API.
+    /* @var \AdamPaterson\OAuth2\Client\Provider\SlackResourceOwner $profile */
     if (!$profile = $this->slackManager->getUserInfo()) {
       drupal_set_message($this->t('Slack login failed, could not load Slack profile. Contact site administrator.'), 'error');
       return $this->redirect('user.login');
