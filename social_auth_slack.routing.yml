@@ -1,7 +1,7 @@
 social_auth_slack.redirect_to_slack:
   path: 'user/login/slack'
   defaults:
-    _controller: '\Drupal\social_auth_slack\Controller\SlackAuthController::redirectToSlack'
+    _controller: '\Drupal\social_auth_slack\Controller\SlackAuthController::redirectToProvider'
   requirements:
     # Anonymous users can log in, but authenticated users can also associate a new provider.
     _access: 'TRUE'
