@@ -2,16 +2,13 @@
 
 namespace Drupal\social_auth_slack\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\social_api\Plugin\NetworkManager;
 use Drupal\social_auth\Controller\OAuth2ControllerBase;
 use Drupal\social_auth\SocialAuthDataHandler;
-use Drupal\social_auth\SocialAuthUserManager;
 use Drupal\social_auth\User\UserAuthenticator;
 use Drupal\social_auth_slack\SlackAuthManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -27,7 +24,7 @@ class SlackAuthController extends OAuth2ControllerBase {
    * @param \Drupal\social_api\Plugin\NetworkManager $network_manager
    *   Used to get an instance of social_auth_slack network plugin.
    * @param \Drupal\social_auth\User\UserAuthenticator $user_authenticator
-   *   Manages user login/registration.
+   *   Manages user authentication/registration.
    * @param \Drupal\social_auth_slack\SlackAuthManager $slack_manager
    *   Used to manage authentication methods.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request
