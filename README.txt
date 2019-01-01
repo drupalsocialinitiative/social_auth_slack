@@ -12,7 +12,8 @@ CONTENTS OF THIS FILE
 INTRODUCTION
 ------------
 
-Social Auth Slack Module is a Slack Authentication integration for Drupal.
+Social Auth Slack Module is a Slack authentication integration for Drupal. It is
+based on the Social Auth and Social API projects
 
 REQUIREMENTS
 ------------
@@ -27,8 +28,6 @@ INSTALLATION
 
  * Run composer to install dependencies:
    composer require "drupal/social_auth_slack:~2.0"
-
- * Install the dependencies: Social API and Social Auth.
 
  * Install as you would normally install a contributed Drupal module.
    See https://drupal.org/documentation/install/modules-themes/modules-8
