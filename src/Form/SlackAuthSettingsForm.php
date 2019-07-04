@@ -107,13 +107,13 @@ class SlackAuthSettingsForm extends SocialAuthSettingsForm {
       '#default_value' => $GLOBALS['base_url'] . '/user/login/slack/callback',
     ];
 
-    $form['linkedin_settings']['advanced'] = [
+    $form['slack_settings']['advanced'] = [
       '#type' => 'details',
       '#title' => $this->t('Advanced settings'),
       '#open' => FALSE,
     ];
 
-    $form['linkedin_settings']['advanced']['scopes'] = [
+    $form['slack_settings']['advanced']['scopes'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Scopes for API call'),
       '#default_value' => $config->get('scopes'),
@@ -122,7 +122,7 @@ class SlackAuthSettingsForm extends SocialAuthSettingsForm {
                                   You can see the full list of valid fields and required scopes <a href="@fields">here</a>.', ['@fields' => 'https://api.slack.com/web']),
     ];
 
-    $form['linkedin_settings']['advanced']['endpoints'] = [
+    $form['slack_settings']['advanced']['endpoints'] = [
       '#type' => 'textarea',
       '#title' => $this->t('API calls to be made to collect data'),
       '#default_value' => $config->get('endpoints'),

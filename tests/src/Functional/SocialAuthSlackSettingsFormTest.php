@@ -26,7 +26,6 @@ class SocialAuthSlackSettingsFormTest extends SocialAuthTestBase {
   protected function setUp() {
     $this->module = 'social_auth_slack';
     $this->provider = 'slack';
-    $this->moduleType = 'social-auth';
 
     parent::setUp();
   }
