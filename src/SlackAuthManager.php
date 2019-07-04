@@ -53,7 +53,7 @@ class SlackAuthManager extends OAuth2Manager {
    * {@inheritdoc}
    */
   public function getAuthorizationUrl() {
-    $scopes = ['users:read', 'users:read.email'];
+    $scopes = ['identity.basic', 'identity.email'];
 
     $extra_scopes = $this->getScopes();
     if ($extra_scopes) {
