@@ -76,7 +76,7 @@ class SlackAuthController extends OAuth2ControllerBase {
       return $redirect;
     }
 
-    /* @var \AdamPaterson\OAuth2\Client\Provider\SlackResourceOwner|null $profile */
+    /** @var \AdamPaterson\OAuth2\Client\Provider\SlackResourceOwner|null $profile */
     $profile = $this->processCallback();
 
     // If authentication was successful.
