@@ -3,6 +3,7 @@
 namespace Drupal\social_auth_slack\Plugin\Network;
 
 use AdamPaterson\OAuth2\Client\Provider\Slack;
+use Drupal\Core\Url;
 use Drupal\social_api\SocialApiException;
 use Drupal\social_auth\Plugin\Network\NetworkBase;
 use Drupal\social_auth_slack\Settings\SlackAuthSettings;
@@ -49,7 +50,7 @@ class SlackAuth extends NetworkBase implements SlackAuthInterface {
       $league_settings = [
         'clientId' => $settings->getClientId(),
         'clientSecret' => $settings->getClientSecret(),
-        'redirectUri' => $this->requestContext->getCompleteBaseUrl() . '/user/login/slack/callback',
+        'redirectUri' => Url::fromRoute('social_auth_slack.callback')->setAbsolute()->toString(),
       ];
 
       // Proxy configuration data for outward proxy.
